@@ -189,7 +189,7 @@ case class Charge(
   amount: Int,
   currency: String,
   refunded: Boolean,
-  disputed: Boolean,
+  dispute: String,
   fee: Int,
   card: Card,
   failureMessage: Option[String],
