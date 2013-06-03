@@ -101,7 +101,7 @@ abstract class APIResource {
     request
   }
 
-  def rawRequest(method: String, url: String, params: Map[String,_] = Map.empty): (String, Int) = {
+  def rawRequest(method: String, url: String, params: Map[String,Any] = Map.empty): (String, Int) = {
     val client = httpClient
     val paramList = params.flatMap(kv => flattenParam(kv._1, kv._2)).toList
     try {
