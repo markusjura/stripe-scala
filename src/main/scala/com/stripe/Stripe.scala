@@ -300,7 +300,8 @@ case class Subscription(
   endedAt: Option[Long],
   trialStart: Option[Long],
   trialEnd: Option[Long],
-  canceledAt: Option[Long]) extends APIResource {
+  canceledAt: Option[Long],
+  quantity: Int) extends APIResource {
 }
 
 case class NextRecurringCharge(amount: Int, date: String)
