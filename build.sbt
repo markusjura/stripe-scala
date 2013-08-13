@@ -6,7 +6,7 @@ organization := "com.stripe"
 
 scalaVersion := "2.9.2"
 
-crossScalaVersions := Seq("2.9.1", "2.9.2")
+crossScalaVersions := Seq("2.9.1", "2.9.2", "2.10.0")
 
 scalacOptions ++= Seq("-unchecked", "-deprecation")
 

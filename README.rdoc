@@ -17,7 +17,7 @@ Add the Scala-Tools repository and the stripe-scala dependency to your POM:
     <dependencies>
         <dependency>
             <groupId>com.stripe</groupId>
-            <artifactId>stripe-scala_2.9.1</artifactId> <!-- replace with your Scala version -->
+            <artifactId>stripe-scala_2.9.2</artifactId> <!-- replace with your Scala version -->
             <version>1.1.4</version>
         </dependency>
     </dependencies>

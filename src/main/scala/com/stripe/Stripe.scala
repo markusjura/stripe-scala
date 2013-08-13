@@ -101,7 +101,7 @@ abstract class APIResource {
     request
   }
 
-  def rawRequest(method: String, url: String, params: Map[String,_] = Map.empty): (String, Int) = {
+  def rawRequest(method: String, url: String, params: Map[String,Any] = Map.empty): (String, Int) = {
     val client = httpClient
     val paramList = params.flatMap(kv => flattenParam(kv._1, kv._2)).toList
     try {
@@ -178,6 +178,7 @@ case class Card(
   cvcCheck: Option[String] = None,
   addressLine1Check: Option[String] = None,
   addressZipCheck: Option[String] = None) extends APIResource
+
 
 case class Charge(
   created: Long,
@@ -366,6 +367,7 @@ object InvoiceItem extends APIResource {
 
 case class InvoiceLineSubscriptionPeriod(start: Long, end: Long)
 case class InvoiceLineSubscription(plan: Plan, amount: Int, period: InvoiceLineSubscriptionPeriod)
+
 case class InvoiceLines(
   `object`: String,
   count: Int,
@@ -404,6 +406,7 @@ case class Invoice(
   livemode: Boolean,
   attemptCount: Int,
   amountDue: Int,
+  currency: String,
   startingBalance: Int,
   endingBalance: Option[Int],
   nextPaymentAttempt: Option[Long],
