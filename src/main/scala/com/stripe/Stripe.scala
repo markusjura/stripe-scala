@@ -29,7 +29,7 @@ case class AuthenticationException(msg: String) extends StripeException(msg)
 
 abstract class APIResource {
   val ApiBase = "https://api.stripe.com/v1"
-  val BindingsVersion = "1.1.2"
+  val BindingsVersion = "1.1.4"
   val CharSet = "UTF-8"
 
   //lift-json format initialization
@@ -307,8 +307,7 @@ case class Subscription(
 case class NextRecurringCharge(amount: Int, date: String)
 
 case class Discount(
-  id: String,
-  coupon: String,
+  coupon: Coupon,
   start: Long,
   customer: String,
   end: Option[Long]) extends APIResource {
@@ -416,7 +415,9 @@ object Token extends APIResource {
 
 case class Coupon(
   id: String,
-  percentOff: Int,
+  percentOff: Option[Int],
+  amountOff: Option[Int],
+  currency: Option[String],
   livemode: Boolean,
   duration: String,
   redeemBy: Option[Long],
