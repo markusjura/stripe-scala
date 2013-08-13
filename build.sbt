@@ -4,9 +4,9 @@ version := io.Source.fromFile("VERSION").mkString.trim
 
 organization := "com.stripe"
 
-scalaVersion := "2.9.2"
+scalaVersion := "2.10.0"
 
-crossScalaVersions := Seq("2.9.1", "2.9.2", "2.10.0")
+crossScalaVersions := Seq("2.10.0")
 
 scalacOptions ++= Seq("-unchecked", "-deprecation")
 

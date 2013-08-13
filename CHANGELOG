@@ -1,3 +1,6 @@
+== 1.1.5 2013-08-13
+* Upgrade to Scala 2.10
+
 == 1.1.4 2013-08-13
 * Update case classes to current Stripe API json objects (Stripe API version: 2013-02-13)
 * Updated case classes: Coupon, Discount, Subscription
