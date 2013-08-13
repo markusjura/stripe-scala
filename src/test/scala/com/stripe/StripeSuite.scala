@@ -84,7 +84,15 @@ class CustomerSuite extends FunSuite with StripeSuite {
   test("Customers can be created") {
     val customer = Customer.create(DefaultCustomerMap + ("description" -> "Test Description"))
     customer.description.get should be ("Test Description")
-    customer.activeCard.isEmpty should be (false)
+  }
+
+  test("Customers with a discount can be created") {
+    val createdCoupon = Coupon.create(getUniqueCouponMap)
+    val retrievedCoupon = Coupon.retrieve(createdCoupon.id)
+    val description = "Customer with Discount"
+    val customer = Customer.create(DefaultCustomerMap + ("description" -> description, "coupon" -> retrievedCoupon.id))
+    customer.description.get should be (description)
+    customer.discount.isDefined should be (true)
   }
 
   test("Customers can be retrieved individually") {
@@ -234,8 +242,8 @@ class InvoiceSuite extends FunSuite with StripeSuite {
     val invoices = Invoice.all(Map("customer" -> customer.id)).data
     val invoice = invoices.head
     invoice.customer should equal (customer.id)
-    val invoiceLineSubscription = invoice.lines.subscriptions.head
-    invoiceLineSubscription.plan.id should equal (plan.id)
+    val invoiceLineSubscription = invoice.lines.data.head
+    invoiceLineSubscription.plan.map(_.id) should equal (Some(plan.id))
   }
 
   test("Upcoming Invoices can be retrieved") {
@@ -271,7 +279,7 @@ class TokenSuite extends FunSuite with StripeSuite {
 class CouponSuite extends FunSuite with StripeSuite {
   test("Coupons can be created") {
     val coupon = Coupon.create(getUniqueCouponMap)
-    coupon.percentOff should equal (10)
+    coupon.percentOff should equal (Some(10))
   }
 
   test("Coupons can be retrieved individually") {
