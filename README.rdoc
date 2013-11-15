@@ -1,15 +1,17 @@
 = Stripe Scala bindings
 
-== Quickstart with sbt 0.10
+== This fork supports API version 2013-11-14
+
+== Quickstart with sbt 0.12.2
 In the +stripe-scala+ directory, run <tt>sbt console</tt>. You're now in a Scala REPL where you can import +com.stripe+. Set your +stripe.apiKey+ and start making API requests. (See the Example section at the end of this file)
 
 == Installation
-The current release is distributed for <b>Scala 2.9.1 or later</b>. Add +stripe-scala+ as a dependency in sbt or Maven:
+The current release is distributed for <b>Scala 2.10.0 or later</b>. Add +stripe-scala+ as a dependency in sbt or Maven:
 
 === sbt
 Add the stripe-scala dependency:
 
-    val stripeScala = "com.stripe" %% "stripe-scala" % "1.1.5"
+    val stripeScala = "com.stripe" %% "stripe-scala" % “1.2.0”
 
 === Maven
 Add the Scala-Tools repository and the stripe-scala dependency to your POM:
@@ -18,7 +20,7 @@ Add the Scala-Tools repository and the stripe-scala dependency to your POM:
         <dependency>
             <groupId>com.stripe</groupId>
             <artifactId>stripe-scala_2.10</artifactId> <!-- replace with your Scala version -->
-            <version>1.1.5</version>
+            <version>1.2.0</version>
         </dependency>
     </dependencies>
     <repositories>

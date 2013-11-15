@@ -310,6 +310,6 @@ class AccountSuite extends FunSuite with StripeSuite {
     account.detailsSubmitted should be (false)
     account.statementDescriptor should be (None)
     account.currenciesSupported.length should be (1)
-    account.currenciesSupported.head should be ("USD")
+    account.currenciesSupported.head should be ("usd")
   }
 }

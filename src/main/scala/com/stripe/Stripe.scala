@@ -30,7 +30,7 @@ case class AuthenticationException(msg: String) extends StripeException(msg)
 
 abstract class APIResource {
   val ApiBase = "https://api.stripe.com/v1"
-  val BindingsVersion = "1.1.4"
+  val BindingsVersion = "1.2.0"
   val CharSet = "UTF-8"
 
   //lift-json format initialization
@@ -161,54 +161,65 @@ case class ErrorContainer(error: Error)
 case class Error(`type`: String, message: String, code: Option[String], param: Option[String])
 
 case class Card(
-  last4: String,
-  `type`: String,
-  `object`: String,
+  id: String,
   expMonth: Int,
   expYear: Int,
   fingerprint: String,
-  country: Option[String],
-  name: Option[String] = None,
-  addressLine1: Option[String] = None,
-  addressLine2: Option[String] = None,
-  addressZip: Option[String] = None,
-  addressState: Option[String] = None,
+  last4: String,
+  `type`: String,
   addressCity: Option[String] = None,
   addressCountry: Option[String] = None,
-  cvcCheck: Option[String] = None,
+  addressLine1: Option[String] = None,
   addressLine1Check: Option[String] = None,
-  addressZipCheck: Option[String] = None) extends APIResource
+  addressLine2: Option[String] = None,
+  addressState: Option[String] = None,
+  addressZip: Option[String] = None,
+  addressZipCheck: Option[String] = None,
+  country: Option[String],
+  customer: Option[String],
+  cvcCheck: Option[String] = None,
+  name: Option[String] = None) extends APIResource
 
 
 case class Charge(
-  created: Long,
   id: String,
-  `object`: String,
   livemode: Boolean,
-  paid: Boolean,
   amount: Int,
-  currency: String,
-  refunded: Boolean,
-  dispute: Option[String] = None,
-  card: Card,
   captured: Boolean,
-  feeDetails: List[FeeDetail],
-  failureMessage: Option[String],
+  card: Card,
+  created: Long,
+  currency: String,
+  paid: Boolean,
+  refunded: Boolean,
+  refunds: List[Refund],
   amountRefunded: Option[Int],
+  balanceTransaction: Option[String],
   customer: Option[String],
-  invoice: Option[String],
-  description: Option[String]) extends APIResource {
+  description: Option[String],
+  dispute: Option[Dispute],
+  failureCode: Option[String],
+  failureMessage: Option[String],
+  invoice: Option[String]) extends APIResource {
   def refund(): Charge = request("POST", "%s/refund".format(instanceURL(this.id))).extract[Charge]
 }
 
-case class FeeDetail(
+case class Refund(
   amount: Int,
+  created: Long,
   currency: String,
-  `type`: String,
-  description: Option[String],
-  application: Option[String],
-  amountRefunded: Option[Int]
-)
+  balanceTransaction: Option[String])
+
+case class Dispute(
+  livemode: Boolean,
+  amount: Int,
+  balanceTransaction: String,
+  charge: String,
+  created: Long,
+  currency: String,
+  reason: String,
+  status: String,
+  evidence: Option[String],
+  evidenceDueBy: Long)
 
 case class ChargeCollection(count: Int, data: List[Charge])
 
@@ -228,16 +239,17 @@ object Charge extends APIResource {
 }
 
 case class Customer(
-  created: Long,
   id: String,
   livemode: Boolean,
-  description: Option[String],
-  activeCard: Option[Card],
-  email: Option[String],
+  cards: CardList,
+  created: Long,
+  accountBalance: Option[Int],
+  defaultCard: Option[String],
   delinquent: Option[Boolean],
-  subscription: Option[Subscription],
+  description: Option[String],
   discount: Option[Discount],
-  accountBalance: Option[Int]) extends APIResource {
+  email: Option[String],
+  subscription: Option[Subscription]) extends APIResource {
   def update(params: Map[String,_]): Customer = {
     request("POST", instanceURL(this.id), params).extract[Customer]
   }
@@ -254,6 +266,11 @@ case class Customer(
     request("DELETE", "%s/subscription".format(instanceURL(id)), params).extract[Subscription]
   }
 }
+
+case class CardList(
+  count: Int,
+  data: List[Card],
+  url: String)
 
 case class DeletedCustomer(id: String, deleted: Boolean)
 
@@ -275,13 +292,12 @@ object Customer extends APIResource {
 
 case class Plan(
   id: String,
-  name: String,
-  interval: String,
-  intervalCount: Int,
-  `object`: String,
+  livemode: Boolean,
   amount: Int,
   currency: String,
-  livemode: Boolean,
+  interval: String,
+  intervalCount: Int,
+  name: String,
   trialPeriodDays: Option[Int]) extends APIResource {
   def delete(): DeletedPlan = {
     request("DELETE", instanceURL(this.id)).extract[DeletedPlan]
@@ -307,35 +323,37 @@ object Plan extends APIResource {
 }
 
 case class Subscription(
+  id: String,
+  cancelAtPeriodEnd: Option[Boolean],
+  customer: String,
   plan: Plan,
+  quantity: Int,
   start: Long,
   status: String,
-  customer: String,
-  cancelAtPeriodEnd: Option[Boolean],
-  currentPeriodStart: Option[Long],
-  currentPeriodEnd: Option[Long],
-  endedAt: Option[Long],
-  trialStart: Option[Long],
-  trialEnd: Option[Long],
+  applicationFeePercent: Option[Float],
   canceledAt: Option[Long],
-  quantity: Int) extends APIResource {
+  currentPeriodEnd: Option[Long],
+  currentPeriodStart: Option[Long],
+  endedAt: Option[Long],
+  trialEnd: Option[Long],
+  trialStart: Option[Long]) extends APIResource {
 }
-
-case class NextRecurringCharge(amount: Int, date: String)
 
 case class Discount(
   coupon: Coupon,
-  start: Long,
   customer: String,
+  start: Long,
   end: Option[Long]) extends APIResource {
 }
 
 case class InvoiceItem(
   id: String,
+  livemode: Boolean,
   amount: Int,
   currency: String,
+  customer: String,
   date: Long,
-  livemode: Boolean,
+  proration: Boolean,
   description: Option[String],
   invoice: Option[Invoice]) extends APIResource {
   def update(params: Map[String,_]): InvoiceItem = {
@@ -369,7 +387,6 @@ case class InvoiceLineSubscriptionPeriod(start: Long, end: Long)
 case class InvoiceLineSubscription(plan: Plan, amount: Int, period: InvoiceLineSubscriptionPeriod)
 
 case class InvoiceLines(
-  `object`: String,
   count: Int,
   url: String,
   data: List[InvoiceLine]
@@ -377,7 +394,6 @@ case class InvoiceLines(
 
 case class InvoiceLine(
   id: String,
-  `object`: String,
   `type`: String,
   livemode: Boolean,
   amount: Int,
@@ -390,31 +406,30 @@ case class InvoiceLine(
 )
 
 case class Invoice(
-  date: Long,
-  // id is optional since UpcomingInvoices don't have an ID.
-  id: Option[String],
-  periodStart: Long,
-  periodEnd: Long,
-  lines: InvoiceLines,
-  subtotal: Int,
-  total: Int,
-  customer: String,
-  `object`: String,
+  id: Option[String], // id is optional since UpcomingInvoices don't have an ID.
+  livemode: Boolean,
+  amountDue: Int,
+  attemptCount: Int,
   attempted: Boolean,
   closed: Boolean,
-  paid: Boolean,
-  livemode: Boolean,
-  attemptCount: Int,
-  amountDue: Int,
   currency: String,
+  customer: String,
+  date: Long,
+  lines: InvoiceLines,
+  paid: Boolean,
+  periodEnd: Long,
+  periodStart: Long,
   startingBalance: Int,
-  endingBalance: Option[Int],
-  nextPaymentAttempt: Option[Long],
+  subtotal: Int,
+  total: Int,
+  applicationFee: Option[Int],
   charge: Option[String],
-  discount: Option[Discount]) {
+  discount: Option[Discount],
+  endingBalance: Option[Int],
+  nextPaymentAttempt: Option[Long]) {
 }
 
-case class InvoiceCollection(`object`: String, count: Int, url: String, data: List[Invoice])
+case class InvoiceCollection(count: Int, url: String, data: List[Invoice])
 
 object Invoice extends APIResource {
   def retrieve(id: String): Invoice = {
@@ -432,10 +447,12 @@ object Invoice extends APIResource {
 
 case class Token(
   id: String,
-  created: Int,
   livemode: Boolean,
+  created: Long,
+  `type`: String,
   used: Boolean,
-  card: Card) extends APIResource {
+  bankAccount: Option[BankAccount],
+  card: Option[Card]) extends APIResource {
 }
 
 object Token extends APIResource {
@@ -448,17 +465,27 @@ object Token extends APIResource {
   }
 }
 
+case class BankAccount(
+  id: String,
+  bankName: String,
+  country: String,
+  currency: String,
+  last4: String,
+  fingerprint: Option[String],
+  validated: Option[Boolean],
+  verified: Option[Boolean])
+
 case class Coupon(
   id: String,
-  percentOff: Option[Int],
-  amountOff: Option[Int],
-  currency: Option[String],
   livemode: Boolean,
   duration: String,
-  redeemBy: Option[Long],
+  amountOff: Option[Int],
+  currency: Option[String],
+  durationInMonths: Option[Int],
   maxRedemptions: Option[Int],
-  timesRedeemed: Option[Int],
-  durationInMonths: Option[Int]) extends APIResource {
+  percentOff: Option[Int],
+  redeemBy: Option[Long],
+  timesRedeemed: Option[Int]) extends APIResource {
   def delete(): DeletedCoupon = {
     request("DELETE", instanceURL(this.id)).extract[DeletedCoupon]
   }
@@ -484,15 +511,58 @@ object Coupon extends APIResource {
 
 case class Account(
   id: String,
-  email: Option[String],
-  statementDescriptor: Option[String],
-  detailsSubmitted: Boolean,
   chargeEnabled: Boolean,
-  currenciesSupported: Array[String]
-) extends APIResource
+  country: String,
+  currenciesSupported: List[String],
+  defaultCurrency: String,
+  detailsSubmitted: Boolean,
+  transferEnabled: Boolean,
+  email: Option[String],
+  statementDescriptor: Option[String]) extends APIResource
 
 object Account extends APIResource {
   def retrieve: Account = {
     request("GET", singleInstanceURL).extract[Account]
+  }
+}
+
+case class Balance(
+  livemode: Boolean,
+  available: List[BalanceItem],
+  pending: List[BalanceItem]) extends APIResource
+
+object Balance extends APIResource {
+  def retrieve(): Balance = {
+    request("GET", singleInstanceURL).extract[Balance]
+  }
+}
+
+case class BalanceItem(
+  amount: Int,
+  currency: String)
+
+case class BalanceTransaction(
+  id: String,
+  amount: Int,
+  availableOn: Long,
+  created: Long,
+  currency: String,
+  fee: Int,
+  feeDetails: FeeDetails,
+  net: Int,
+  source: String,
+  status: String,
+  description: Option[String]) extends APIResource
+
+case class FeeDetails(
+  amount: Int,
+  currency: String,
+  `type`: String,
+  application: Option[String],
+  description: Option[String])
+
+object BalanceTransaction extends APIResource {
+  def retrieve(id: String): BalanceTransaction = {
+    request("GET", instanceURL(id)).extract[BalanceTransaction]
   }
 }
