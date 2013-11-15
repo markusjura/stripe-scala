@@ -5,7 +5,7 @@
     <artifactId>stripe-scala_2.10</artifactId>
     <packaging>jar</packaging>
     <description>stripe-scala</description>
-    <version>1.1.5</version>
+    <version>1.2.0</version>
     <name>stripe-scala</name>
     <organization>
         <name>com.stripe</name>

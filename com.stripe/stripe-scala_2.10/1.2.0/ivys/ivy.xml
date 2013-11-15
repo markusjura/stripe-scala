@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ivy-module version="2.0" xmlns:e="http://ant.apache.org/ivy/extra">
-	<info organisation="com.stripe" module="stripe-scala_2.10" revision="1.1.5" status="release" publication="20130813155736">
+	<info organisation="com.stripe" module="stripe-scala_2.10" revision="1.2.0" status="release" publication="20131115111826">
 		<description>
 		stripe-scala
 		</description>
